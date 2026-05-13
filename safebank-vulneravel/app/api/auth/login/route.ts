@@ -12,15 +12,17 @@ export async function POST(request: NextRequest) {
   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`
   sessions.set(sessionId, user.id)
 
-  // VULNERABILIDADE: cookie com SameSite=None; Secure
-  // Chrome rejeita SameSite=None sem Secure mesmo no localhost.
-  // Com Secure: Chrome aceita o cookie em http://localhost pois trata localhost
-  // como origem segura — e o envia em requisições cross-origin (localhost:4000 → localhost:3000).
-  return new Response(JSON.stringify({ ok: true, username: user.username }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Set-Cookie': `session_id=${sessionId}; Path=/; HttpOnly; SameSite=None; Secure`,
-    },
+  const response = NextResponse.json({ ok: true, username: user.username })
+
+  // VULNERABILIDADE: cookie sem SameSite=Strict nem token CSRF
+  // Em navegadores antigos, ausência de SameSite = SameSite=None (envia cookie cross-origin)
+  // A proteção real exigiria: sameSite: 'strict' + token CSRF no body
+  response.cookies.set('session_id', sessionId, {
+    httpOnly: true,
+    path: '/',
+    // sameSite não definido: Chrome moderno usa Lax por padrão
+    // Para demo completo cross-origin, usar sameSite: 'none' + secure: true
   })
+
+  return response
 }

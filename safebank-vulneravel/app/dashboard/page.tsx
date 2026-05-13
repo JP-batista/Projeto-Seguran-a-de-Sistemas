@@ -44,23 +44,17 @@ export default async function DashboardPage() {
             <span>⚡</span> Demonstração do Ataque CSRF
           </h3>
           <p className="text-sm text-amber-700 mt-2">
-            Você está logado como <strong>{user.username}</strong>. Mantenha esta aba aberta e
-            abra o site do atacante em outra aba — ele está rodando em uma origem diferente.
+            Você está logado como <strong>{user.username}</strong>. Clique abaixo para simular
+            o que acontece quando você acessa uma página maliciosa enquanto está autenticado.
           </p>
-          <div className="mt-3 bg-amber-100 rounded-lg px-4 py-3 font-mono text-sm text-amber-900">
-            🌐 http://localhost:4000
-          </div>
           <p className="text-xs text-amber-600 mt-2">
-            Execute <code className="bg-amber-100 px-1 rounded">npx serve attacker-site -p 4000</code> na
-            raiz do projeto para iniciar o site do atacante.
+            A página do atacante vai disparar uma transferência silenciosa sem sua permissão.
           </p>
           <a
-            href="http://localhost:4000"
-            target="_blank"
-            rel="noopener"
+            href="/attacker"
             className="mt-3 inline-block bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700"
           >
-            🎭 Abrir Site do Atacante (localhost:4000) →
+            🎭 Abrir Página do Atacante →
           </a>
         </div>
 
