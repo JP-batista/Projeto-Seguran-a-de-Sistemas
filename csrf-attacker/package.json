@@ -1,0 +1,9 @@
+{
+  "name": "csrf-attacker",
+  "version": "1.0.0",
+  "description": "Site malicioso para demonstração de ataque CSRF — uso acadêmico",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

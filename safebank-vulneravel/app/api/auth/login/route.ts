@@ -14,14 +14,9 @@ export async function POST(request: NextRequest) {
 
   const response = NextResponse.json({ ok: true, username: user.username })
 
-  // VULNERABILIDADE: cookie sem SameSite=Strict nem token CSRF
-  // Em navegadores antigos, ausência de SameSite = SameSite=None (envia cookie cross-origin)
-  // A proteção real exigiria: sameSite: 'strict' + token CSRF no body
   response.cookies.set('session_id', sessionId, {
     httpOnly: true,
     path: '/',
-    // sameSite não definido: Chrome moderno usa Lax por padrão
-    // Para demo completo cross-origin, usar sameSite: 'none' + secure: true
   })
 
   return response

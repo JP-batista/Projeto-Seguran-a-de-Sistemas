@@ -5,8 +5,8 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SafeBank — Demo CSRF',
-  description: 'Aplicação propositalmente vulnerável a CSRF para fins educacionais',
+  title: 'SafeBank — Banco Online',
+  description: 'SafeBank — Sua conta bancária segura e acessível',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

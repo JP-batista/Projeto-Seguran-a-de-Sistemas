@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sessions, users } from '@/lib/store'
 
-// ============================================================
-// ENDPOINT VULNERÁVEL — Demonstração Educacional de CSRF
-// VULNERABILIDADES INTENCIONAIS:
-//   1. Nenhum token CSRF é verificado
-//   2. Alteração de e-mail sem reautenticação
-//   3. Aceita qualquer origem
-// EM PRODUÇÃO: verificar token CSRF + confirmar senha atual
-// ============================================================
 export async function POST(request: NextRequest) {
   const sessionId = request.cookies.get('session_id')?.value
   if (!sessionId) {
