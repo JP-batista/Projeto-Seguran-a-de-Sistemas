@@ -22,7 +22,7 @@ export default async function DashboardPage() {
       <nav className="bg-green-700 text-white px-6 py-4 flex items-center justify-between shadow">
         <div className="flex items-center gap-2">
           <span className="text-xl">🏦</span>
-          <span className="font-bold text-lg">SafeBank</span>
+          <span className="font-bold text-lg">SafeBank Seguro</span>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <span>Ola, <strong>{user.username}</strong></span>
