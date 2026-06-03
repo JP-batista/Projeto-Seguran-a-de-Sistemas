@@ -19,7 +19,7 @@ export default function LogoutButton({ csrfToken }: { csrfToken: string }) {
   return (
     <button
       onClick={handleLogout}
-      className="bg-blue-500 hover:bg-blue-400 px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+      className="bg-green-500 hover:bg-green-400 px-3 py-1 rounded-lg text-xs font-medium transition-colors"
     >
       Sair
     </button>

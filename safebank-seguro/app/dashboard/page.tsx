@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <nav className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow">
+      <nav className="bg-green-700 text-white px-6 py-4 flex items-center justify-between shadow">
         <div className="flex items-center gap-2">
           <span className="text-xl">🏦</span>
           <span className="font-bold text-lg">SafeBank</span>
