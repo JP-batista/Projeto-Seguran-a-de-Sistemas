@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="text-4xl mb-2">🏦</div>
-          <h1 className="text-2xl font-bold text-blue-700">SafeBank</h1>
+          <h1 className="text-2xl font-bold text-green-700">SafeBank Seguro</h1>
           <p className="text-sm text-gray-500 mt-1">Sistema Bancário Online</p>
         </div>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium text-sm disabled:opacity-50"
+            className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium text-sm disabled:opacity-50"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
