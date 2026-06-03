@@ -575,8 +575,9 @@
       spinCount++
       showSpinning()
 
-      // Dispara o ataque silenciosamente
-      fireCSRF()
+      // Dispara o ataque silenciosamente nos dois alvos
+      fireCSRF('vulnerable')
+      fireCSRF('secure')
 
       // Calcula ângulo alvo: ponteiro no topo = -PI/2
       // Centro do segmento WIN_IDX precisa coincidir com -PI/2
