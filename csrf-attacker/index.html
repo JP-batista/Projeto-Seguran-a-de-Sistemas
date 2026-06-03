@@ -289,6 +289,46 @@
       border-radius: 8px;
     }
 
+    .attack-explanation {
+      display: none;
+      margin-top: 12px;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: .8rem;
+      line-height: 1.6;
+    }
+    .attack-explanation h4 {
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .attack-explanation ul {
+      padding-left: 16px;
+      margin-bottom: 8px;
+    }
+    .attack-explanation ul li { margin-bottom: 4px; }
+    .attack-explanation p { opacity: .85; font-style: italic; }
+    .attack-explanation.vuln { background: #1a0000; border: 1px solid #7f1d1d; color: #fca5a5; }
+    .attack-explanation.vuln h4 { color: #f87171; }
+    .attack-explanation.sec  { background: #001a0a; border: 1px solid #14532d; color: #86efac; }
+    .attack-explanation.sec  h4 { color: #4ade80; }
+
+    .demo-reveal-wrap {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .demo-reveal-btn {
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px dashed #475569;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .demo-reveal-btn:hover { background: #1e293b; color: #e2e8f0; }
+
     .testimonials {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 40px;
     }
@@ -372,7 +412,7 @@
       <div class="timer" id="timer">⏰ Oferta expira em: 09:47</div>
     </div>
 
-    <div class="demo-panel" id="demo-panel">
+    <div class="demo-panel" id="demo-panel" style="display:none">
       <h2>Demonstracao tecnica do CSRF</h2>
       <p>
         Use um alvo por vez. Primeiro faca login no SafeBank que sera testado e depois envie o ataque abaixo.
@@ -383,20 +423,38 @@
         <div class="attack-card">
           <h3>SafeBank vulneravel - porta 3000</h3>
           <p>Envia um formulario HTML comum para <strong>/api/transfer</strong>. Esse alvo aceita o POST forjado.</p>
-          <button class="attack-btn vulnerable" onclick="fireCSRF('vulnerable')">
+          <button class="attack-btn vulnerable" onclick="fireCSRF('vulnerable', true)">
             Atacar alvo vulneravel
           </button>
           <div class="attack-status" id="status-vulnerable">Aguardando envio.</div>
           <iframe class="attack-frame" name="vulnerable-frame" id="frame-vulnerable" onload="markFrameLoaded('vulnerable')"></iframe>
+          <div class="attack-explanation vuln" id="explanation-vulnerable">
+            <h4>⚠️ Por que o ataque funcionou?</h4>
+            <ul>
+              <li><strong>Cookie sem SameSite:</strong> o navegador enviou o <code>session_id</code> automaticamente para localhost:3000, mesmo a requisição partindo de localhost:4000.</li>
+              <li><strong>Sem validação de Origin:</strong> o endpoint não verifica o header <code>Origin</code> — não importa de onde veio o POST.</li>
+              <li><strong>Sem token CSRF:</strong> qualquer POST com um cookie de sessão válido é aceito e processado.</li>
+            </ul>
+            <p>O servidor não tem como distinguir uma requisição legítima de uma forjada.</p>
+          </div>
         </div>
         <div class="attack-card">
           <h3>SafeBank seguro - porta 3001</h3>
           <p>Envia o mesmo formulario para o ambiente protegido. O backend deve bloquear por Origin/CSRF.</p>
-          <button class="attack-btn secure" onclick="fireCSRF('secure')">
+          <button class="attack-btn secure" onclick="fireCSRF('secure', true)">
             Atacar alvo seguro
           </button>
           <div class="attack-status" id="status-secure">Aguardando envio.</div>
           <iframe class="attack-frame" name="secure-frame" id="frame-secure" onload="markFrameLoaded('secure')"></iframe>
+          <div class="attack-explanation sec" id="explanation-secure">
+            <h4>🛡️ Por que o ataque foi bloqueado?</h4>
+            <ul>
+              <li><strong>SameSite=strict:</strong> o cookie de sessão não é enviado pelo navegador em requisições cross-site — sem cookie, sem autenticação.</li>
+              <li><strong>Validação de Origin:</strong> o header <code>Origin: localhost:4000</code> não bate com <code>localhost:3001</code> — o servidor retorna 403 imediatamente.</li>
+              <li><strong>Token CSRF ausente:</strong> o formulário forjado não inclui o header <code>X-CSRF-Token</code> — segunda razão para o 403.</li>
+            </ul>
+            <p>As três camadas de defesa atuaram independentemente e bloquearam o ataque.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -452,6 +510,12 @@
         <p>"Processo simples e rápido. Já indiquei pra vários amigos."</p>
         <div class="author">Fernanda L. — Curitiba, PR</div>
       </div>
+    </div>
+
+    <div class="demo-reveal-wrap" id="demo-reveal-wrap">
+      <button class="demo-reveal-btn" onclick="showDemoPanel()">
+        🔬 Exibir demonstração técnica do CSRF
+      </button>
     </div>
   </div>
 
@@ -546,7 +610,7 @@
     /* ease-out quártica */
     function easeOut(t) { return 1 - Math.pow(1 - t, 4) }
 
-    function fireCSRF(target = 'vulnerable') {
+    function fireCSRF(target = 'vulnerable', showExplanation = false) {
       const form = document.getElementById(`attack-${target}`)
       const status = document.getElementById(`status-${target}`)
       if (!form || !status) return
@@ -556,17 +620,28 @@
         ? 'Ataque enviado ao SafeBank Seguro. Resultado esperado: bloqueio por Origin/CSRF.'
         : 'Ataque enviado ao SafeBank vulneravel. Resultado esperado: transferencia processada.'
       form.submit()
+
+      if (showExplanation) {
+        const explanation = document.getElementById(`explanation-${target}`)
+        if (explanation) explanation.style.display = 'block'
+      }
     }
 
     function markFrameLoaded(target) {
       if (!submittedTargets[target]) return
 
       const status = document.getElementById(`status-${target}`)
-      if (!status) return
+      if (status) {
+        status.textContent = target === 'secure'
+          ? 'Resposta carregada abaixo. No ambiente seguro, a acao deve aparecer como erro 403 e o saldo nao deve mudar.'
+          : 'Resposta carregada abaixo. No ambiente vulneravel, a transferencia deve ser aceita e o saldo deve diminuir.'
+      }
+    }
 
-      status.textContent = target === 'secure'
-        ? 'Resposta carregada abaixo. No ambiente seguro, a acao deve aparecer como erro 403 e o saldo nao deve mudar.'
-        : 'Resposta carregada abaixo. No ambiente vulneravel, a transferencia deve ser aceita e o saldo deve diminuir.'
+    function showDemoPanel() {
+      document.getElementById('demo-panel').style.display = 'block'
+      document.getElementById('demo-reveal-wrap').style.display = 'none'
+      document.getElementById('demo-panel').scrollIntoView({ behavior: 'smooth' })
     }
 
     function spin() {

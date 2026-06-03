@@ -1,3 +1,0 @@
-adicionar o site seguro, com o csrf.
-mostrar onde fica o csrf.
-validar se o resquest/token/csrf tá vindo de você mesmo, não de outra pessoa.
